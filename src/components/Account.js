@@ -52,7 +52,6 @@ class Account extends Component {
           open={open}
           onClose={this.handleClose}
         >
-          <MenuItem onClick={this.handleClose}>My account</MenuItem>
           <MenuItem onClick={this.handleLogout}>Logout</MenuItem>
         </Menu>
       </div>

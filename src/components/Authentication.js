@@ -17,7 +17,6 @@ class Authentication extends Component {
   state = {
     email: null,
     password: null,
-    login: false,
     open: false
   };
 
@@ -30,14 +29,19 @@ class Authentication extends Component {
   };
 
   handleLogin = () => {
-    if (this.state.password && this.state.email)
-      this.setState({ login: true }, () => {
-        this.handleClose();
-        this.props.handleLogin({
-          email: this.state.email,
-          password: this.state.password
-        });
-      });
+    if (this.state.password && this.state.email) this.handleClose();
+    this.props.handleLogin({
+      email: this.state.email,
+      password: this.state.password
+    });
+  };
+
+  handleRegister = () => {
+    if (this.state.password && this.state.email) this.handleClose();
+    this.props.handleRegister({
+      email: this.state.email,
+      password: this.state.password
+    });
   };
 
   render() {
@@ -92,6 +96,9 @@ class Authentication extends Component {
           <DialogActions>
             <Button onClick={this.handleClose} color="primary">
               Cancel
+            </Button>
+            <Button onClick={this.handleRegister} color="primary">
+              Register
             </Button>
             <Button onClick={this.handleLogin} color="primary">
               Login
