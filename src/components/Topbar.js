@@ -25,7 +25,7 @@ const styles = {
 };
 
 class Topbar extends Component {
-  state = { login: false, items: null };
+  state = { login: false };
 
   componentDidMount() {
     firebase.auth().onAuthStateChanged(user => {
@@ -70,6 +70,12 @@ class Topbar extends Component {
       });
   };
 
+  handleAdd = items => {
+    this.setState({ items }, () => {
+      console.log(this.state);
+    });
+  };
+
   generateData = () => {
     const flowers = {
       'Blauwe tulpen':
@@ -99,8 +105,8 @@ class Topbar extends Component {
   };
 
   render() {
-    const { classes } = this.props;
-    const { login, items } = this.state;
+    const { classes, items } = this.props;
+    const { login } = this.state;
 
     return (
       <div className={classes.root}>
@@ -128,7 +134,7 @@ class Topbar extends Component {
                 handleLogin={this.handleLogin}
               />
             )}
-            {login && <Shopping items={items} />}
+            {login && <Shopping items={items} handleAdd={this.handleAdd} />}
             {login && <Account handleLogout={this.handleLogout} />}
           </Toolbar>
         </AppBar>

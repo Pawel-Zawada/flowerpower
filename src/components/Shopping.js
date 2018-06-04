@@ -11,6 +11,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
+import { SIGTTIN } from 'constants';
 
 class Shopping extends Component {
   state = {
@@ -62,10 +63,10 @@ class Shopping extends Component {
         >
           {items && (
             <List dense>
-              {Object.keys(items).map(item => {
-                item = items[item];
+              {Object.keys(items).map(itemIndex => {
+                const item = items[itemIndex];
                 return (
-                  <ListItem>
+                  <ListItem key={itemIndex}>
                     <ListItemIcon>
                       <Icon>local_florist</Icon>
                     </ListItemIcon>

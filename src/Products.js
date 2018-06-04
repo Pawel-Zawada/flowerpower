@@ -26,8 +26,7 @@ const styles = theme => ({
 });
 
 class Products extends Component {
-  state = { flowers: null };
-
+  state = {};
   componentDidMount() {
     firebase
       .database()
@@ -37,6 +36,12 @@ class Products extends Component {
       });
   }
 
+  handleAdd = flower => {
+    this.setState({ items: { ...this.state.items, ...flower } }, () => {
+      this.props.handleAdd(this.state.items);
+    });
+  };
+
   render() {
     const { classes } = this.props;
     const { flowers } = this.state;
@@ -44,8 +49,8 @@ class Products extends Component {
     return (
       <Grid container spacing={8} classes={{ container: classes.container }}>
         {flowers
-          ? Object.keys(flowers).map((flower, index) => {
-              flower = flowers[flower];
+          ? Object.keys(flowers).map((flowerIndex, index) => {
+              const flower = flowers[flowerIndex];
               return (
                 <Grid item key={index}>
                   <Card className={classes.card}>
@@ -67,7 +72,13 @@ class Products extends Component {
                       </Typography>
                     </CardContent>
                     <CardActions>
-                      <Button size="small" color="primary">
+                      <Button
+                        onClick={() => {
+                          this.handleAdd({ [flowerIndex]: flower });
+                        }}
+                        size="small"
+                        color="primary"
+                      >
                         Toevoegen
                       </Button>
                     </CardActions>

@@ -20,13 +20,26 @@ class App extends Component {
     };
     firebase.initializeApp(config);
   }
+
+  state = { items: null };
+
+  handleAdd = items => {
+    console.log(items);
+    this.setState({ items });
+  };
+
   render() {
+    const { items } = this.state;
     return (
       <BrowserRouter>
         <div>
-          <Topbar />
+          <Topbar items={items} />
           <Route exact path="/" component={Home} />
-          <Route path="/products" component={Products} />
+          <Route
+            path="/products"
+            render={props => <Products {...props} handleAdd={this.handleAdd} />}
+            handleAdd={this.handleAdd}
+          />
         </div>
       </BrowserRouter>
     );
