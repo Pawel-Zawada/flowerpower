@@ -6,6 +6,7 @@ import Topbar from './components/Topbar';
 
 import Home from './Home';
 import Products from './Products';
+import Admin from './Admin';
 
 class App extends Component {
   constructor(props) {
@@ -40,6 +41,7 @@ class App extends Component {
             render={props => <Products {...props} handleAdd={this.handleAdd} />}
             handleAdd={this.handleAdd}
           />
+          <Route path="/admin" component={Admin} />
         </div>
       </BrowserRouter>
     );
