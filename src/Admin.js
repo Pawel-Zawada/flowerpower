@@ -15,52 +15,14 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import Avatar from '@material-ui/core/Avatar';
 
-var config = {
-  apiKey: 'AIzaSyASJZhCybJSdBWQBvgAx43xBMyroJNhD74',
-  authDomain: 'flowerpower-f4041.firebaseapp.com',
-  databaseURL: 'https://flowerpower-f4041.firebaseio.com',
-  projectId: 'flowerpower-f4041',
-  storageBucket: 'flowerpower-f4041.appspot.com',
-  messagingSenderId: '182579779561'
-};
-firebase.initializeApp(config);
+import TextField from '@material-ui/core/TextField';
+import FormControl from '@material-ui/core/FormControl';
 
-const dummy = {
-  flowers: {
-    '-LEA3ROJGZQaKxswBX8L': {
-      description:
-        'Deze bloemen zijn prachtig voor in de woonkamer of als cadeau.',
-      image:
-        'https://firebasestorage.googleapis.com/v0/b/flowerpower-f4041.appspot.com/o/blauwe-tulpen.jpg?alt=media&token=b2576113-3123-4246-bc43-e80d2ba1aab5',
-      name: 'Blauwe tulpen',
-      price: 2.4
-    },
-    '-LEA3ROKctSTn33uIMSc': {
-      description:
-        'Deze bloemen zijn prachtig voor in de woonkamer of als cadeau.',
-      image:
-        'https://firebasestorage.googleapis.com/v0/b/flowerpower-f4041.appspot.com/o/gele-tulpen.jpg?alt=media&token=349a4157-010a-44d9-8a84-a61dd1d9928d',
-      name: 'Rode tulpen',
-      price: 2.4
-    }
-  },
-  totalPrice: 4.8,
-  customer: 'mail@mail.com'
-};
-
-firebase
-  .database()
-  .ref('orders')
-  .once('value', snapshot => {
-    if (snapshot.exists()) return;
-
-    for (var i = 1; i < 4; i++) {
-      firebase
-        .database()
-        .ref('orders')
-        .push(dummy);
-    }
-  });
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 
 const styles = theme => ({
   root: {
@@ -70,11 +32,14 @@ const styles = theme => ({
   },
   table: {
     minWidth: 700
+  },
+  item: {
+    marginTop: 8
   }
 });
 
 class Admin extends Component {
-  state = { orders: null };
+  state = { orders: null, flowerDialog: false };
 
   componentDidMount() {
     firebase
@@ -91,17 +56,129 @@ class Admin extends Component {
       });
   }
 
+  handleFlowerCreate = () => {
+    const { name, description, image, price } = this.state;
+
+    firebase
+      .storage()
+      .ref(image.name)
+      .put(image)
+      .then(snapshot => {
+        snapshot.ref.getDownloadURL().then(url => {
+          firebase
+            .database()
+            .ref('flowers')
+            .push({
+              name,
+              description,
+              image: url,
+              price
+            })
+            .then(() => {
+              this.setState({
+                name: null,
+                description: null,
+                image: null,
+                price: null,
+                flowerDialog: false
+              });
+            });
+        });
+      });
+  };
+
   render() {
     const { classes } = this.props;
     const { orders, flowers } = this.state;
 
     return (
       <Grid container style={{ margin: 8 }} spacing={8}>
+        <Dialog
+          open={this.state.flowerDialog}
+          onClose={() => {
+            this.setState({ flowerDialog: false });
+          }}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Bloemen toevoegen</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Voer hieronder die informatie in om het toe te voegen aan het
+              product register.
+            </DialogContentText>
+            <FormControl>
+              <Grid container justify="center" classes={{ item: classes.item }}>
+                <Grid item xs={12}>
+                  <TextField
+                    id="name"
+                    label="Naam"
+                    type="text"
+                    onChange={event => {
+                      this.setState({ name: event.target.value });
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    id="description"
+                    label="Beschrijving"
+                    type="text"
+                    onChange={event => {
+                      this.setState({ description: event.target.value });
+                    }}
+                    fullWidth
+                    multiline
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    id="description"
+                    label="Afbeelding"
+                    type="file"
+                    onChange={event => {
+                      this.setState({ image: event.target.files[0] });
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    id="price"
+                    label="Prijs"
+                    type="number"
+                    onChange={event => {
+                      this.setState({ price: event.target.value });
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => {
+                this.setState({ flowerDialog: false });
+              }}
+              color="primary"
+            >
+              Annuleer
+            </Button>
+            <Button onClick={this.handleFlowerCreate} color="primary">
+              Opslaan
+            </Button>
+          </DialogActions>
+        </Dialog>
         {flowers && (
           <Grid item>
             <Typography variant="display1">
               Flowers
-              <Button style={{ marginLeft: 8 }} color="primary" size="small">
+              <Button
+                style={{ marginLeft: 8 }}
+                color="primary"
+                size="small"
+                onClick={() => {
+                  this.setState({ flowerDialog: true });
+                }}
+              >
                 Add new
               </Button>
             </Typography>

@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import firebase from 'firebase';
 import { BrowserRouter, Route } from 'react-router-dom';
 
 import Topbar from './components/Topbar';
@@ -9,19 +8,6 @@ import Products from './Products';
 import Admin from './Admin';
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-    var config = {
-      apiKey: 'AIzaSyASJZhCybJSdBWQBvgAx43xBMyroJNhD74',
-      authDomain: 'flowerpower-f4041.firebaseapp.com',
-      databaseURL: 'https://flowerpower-f4041.firebaseio.com',
-      projectId: 'flowerpower-f4041',
-      storageBucket: 'flowerpower-f4041.appspot.com',
-      messagingSenderId: '182579779561'
-    };
-    firebase.initializeApp(config);
-  }
-
   state = { items: null };
 
   handleAdd = items => {

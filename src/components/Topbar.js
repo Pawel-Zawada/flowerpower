@@ -15,6 +15,29 @@ import Authentication from './Authentication';
 import Account from './Account';
 import Shopping from './Shopping';
 
+const dummy = {
+  flowers: {
+    '-LEA3ROJGZQaKxswBX8L': {
+      description:
+        'Deze bloemen zijn prachtig voor in de woonkamer of als cadeau.',
+      image:
+        'https://firebasestorage.googleapis.com/v0/b/flowerpower-f4041.appspot.com/o/blauwe-tulpen.jpg?alt=media&token=b2576113-3123-4246-bc43-e80d2ba1aab5',
+      name: 'Blauwe tulpen',
+      price: 2.4
+    },
+    '-LEA3ROKctSTn33uIMSc': {
+      description:
+        'Deze bloemen zijn prachtig voor in de woonkamer of als cadeau.',
+      image:
+        'https://firebasestorage.googleapis.com/v0/b/flowerpower-f4041.appspot.com/o/gele-tulpen.jpg?alt=media&token=349a4157-010a-44d9-8a84-a61dd1d9928d',
+      name: 'Rode tulpen',
+      price: 2.4
+    }
+  },
+  totalPrice: 4.8,
+  customer: 'mail@mail.com'
+};
+
 const styles = {
   root: {
     flexGrow: 1
@@ -30,7 +53,17 @@ class Topbar extends Component {
   componentDidMount() {
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
-        this.setState({ login: user });
+        this.setState({ login: user }, () => {
+          firebase
+            .database()
+            .ref('admins')
+            .orderByValue()
+            .equalTo(user.email)
+            .once('value', snapshot => {
+              if (snapshot.exists)
+                this.setState({ login: { ...this.state.login, admin: true } });
+            });
+        });
       } else {
         this.setState({ login: false });
       }
@@ -100,6 +133,20 @@ class Topbar extends Component {
         image
       });
 
+      firebase
+        .database()
+        .ref('orders')
+        .once('value', snapshot => {
+          if (snapshot.exists()) return;
+
+          for (var i = 1; i < 4; i++) {
+            firebase
+              .database()
+              .ref('orders')
+              .push(dummy);
+          }
+        });
+
       return;
     });
   };
@@ -135,7 +182,9 @@ class Topbar extends Component {
               />
             )}
             {login && <Shopping items={items} handleAdd={this.handleAdd} />}
-            {login && <Account handleLogout={this.handleLogout} />}
+            {login && (
+              <Account handleLogout={this.handleLogout} admin={login.admin} />
+            )}
           </Toolbar>
         </AppBar>
       </div>

@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 
+import { Link } from 'react-router-dom';
+
 import IconButton from '@material-ui/core/IconButton';
 import Icon from '@material-ui/core/Icon';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -24,6 +26,8 @@ class Account extends Component {
   };
 
   render() {
+    const { admin } = this.props;
+
     const { anchorEl } = this.state;
 
     const open = Boolean(anchorEl);
@@ -52,6 +56,11 @@ class Account extends Component {
           open={open}
           onClose={this.handleClose}
         >
+          {admin && (
+            <MenuItem component={Link} to="/admin">
+              Admin
+            </MenuItem>
+          )}
           <MenuItem onClick={this.handleLogout}>Logout</MenuItem>
         </Menu>
       </div>
