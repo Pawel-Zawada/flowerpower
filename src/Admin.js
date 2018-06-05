@@ -24,22 +24,41 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemAvatar from '@material-ui/core/ListItemAvatar';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+
+import Icon from '@material-ui/core/Icon';
+import { Divider } from '@material-ui/core';
+
 const styles = theme => ({
+  container: {
+    padding: theme.spacing.unit * 2,
+    width: '100%'
+  },
   root: {
-    width: '100%',
     marginTop: theme.spacing.unit * 3,
     overflowX: 'auto'
   },
   table: {
     minWidth: 700
   },
-  item: {
-    marginTop: 8
-  }
+  item: {}
 });
 
 class Admin extends Component {
-  state = { orders: null, flowerDialog: false };
+  state = {
+    orders: null,
+    order: null,
+    flowerDialog: false,
+    name: null,
+    description: null,
+    image: null,
+    price: null,
+    email: null
+  };
 
   componentDidMount() {
     firebase
@@ -54,10 +73,18 @@ class Admin extends Component {
       .on('value', snapshot => {
         this.setState({ orders: snapshot.val() });
       });
+    firebase
+      .database()
+      .ref('admins')
+      .on('value', snapshot => {
+        this.setState({ admins: snapshot.val() });
+      });
   }
 
   handleFlowerCreate = () => {
     const { name, description, image, price } = this.state;
+
+    if (!name || !description || !image || price) return;
 
     firebase
       .storage()
@@ -87,12 +114,24 @@ class Admin extends Component {
       });
   };
 
+  handleAdminCreate = () => {
+    const { email } = this.state;
+
+    if (!email) return;
+    this.setState({ adminDialog: false }, () => {
+      firebase
+        .database()
+        .ref('admins')
+        .push(email);
+    });
+  };
+
   render() {
     const { classes } = this.props;
-    const { orders, flowers } = this.state;
+    const { orders, order, flowers, orderDialog, admins } = this.state;
 
     return (
-      <Grid container style={{ margin: 8 }} spacing={8}>
+      <Grid container classes={{ container: classes.container }} spacing={8}>
         <Dialog
           open={this.state.flowerDialog}
           onClose={() => {
@@ -168,9 +207,9 @@ class Admin extends Component {
           </DialogActions>
         </Dialog>
         {flowers && (
-          <Grid item>
+          <Grid item xs={5}>
             <Typography variant="display1">
-              Flowers
+              Bloemen
               <Button
                 style={{ marginLeft: 8 }}
                 color="primary"
@@ -179,7 +218,7 @@ class Admin extends Component {
                   this.setState({ flowerDialog: true });
                 }}
               >
-                Add new
+                toevoegen
               </Button>
             </Typography>
 
@@ -215,8 +254,45 @@ class Admin extends Component {
           </Grid>
         )}
         {orders && (
-          <Grid item>
-            <Typography variant="display1">Orders</Typography>
+          <Grid item xs={5}>
+            {orderDialog &&
+              order && (
+                <Dialog
+                  aria-labelledby="simple-dialog-title"
+                  open={this.state.orderDialog}
+                >
+                  <DialogTitle id="simple-dialog-title">
+                    Bestelling bloemen
+                  </DialogTitle>
+                  <List>
+                    {Object.keys(order.flowers).map(flowerIndex => {
+                      const flower = order.flowers[flowerIndex];
+                      return (
+                        <ListItem>
+                          <ListItemAvatar>
+                            <Avatar src={flower.image} />
+                          </ListItemAvatar>
+                          <ListItemText
+                            primary={flower.name}
+                            secondary={flower.description}
+                          />
+                        </ListItem>
+                      );
+                    })}
+                  </List>
+                  <DialogActions>
+                    <Button
+                      onClick={() => {
+                        this.setState({ orderDialog: false, order: null });
+                      }}
+                      color="primary"
+                    >
+                      Sluiten
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              )}
+            <Typography variant="display1">Bestellingen</Typography>
 
             <Paper className={classes.root}>
               <Table className={classes.table}>
@@ -243,6 +319,16 @@ class Admin extends Component {
                             size="small"
                             variant="outlined"
                             color="primary"
+                            onClick={() => {
+                              this.setState({ orderDialog: orderIndex }, () => {
+                                firebase
+                                  .database()
+                                  .ref(`orders/${orderIndex}`)
+                                  .once('value', snapshot => {
+                                    this.setState({ order: snapshot.val() });
+                                  });
+                              });
+                            }}
                           >
                             {`${Object.keys(order.flowers).length} flowers`}
                           </Button>
@@ -252,6 +338,86 @@ class Admin extends Component {
                   })}
                 </TableBody>
               </Table>
+            </Paper>
+          </Grid>
+        )}
+        {admins && (
+          <Grid item xs={2}>
+            <Dialog
+              open={this.state.adminDialog}
+              onClose={() => {
+                this.setState({ adminDialog: false });
+              }}
+              aria-labelledby="form-dialog-title"
+            >
+              <DialogTitle id="form-dialog-title">Admin toevoegen</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Voer hieronder het email adres in van het persoon die als
+                  admin toegevoegd moet worden.
+                </DialogContentText>
+                <FormControl>
+                  <Grid
+                    container
+                    justify="center"
+                    classes={{ item: classes.item }}
+                  >
+                    <Grid item xs={12}>
+                      <TextField
+                        id="email"
+                        label="Email"
+                        type="email"
+                        onChange={event => {
+                          this.setState({ email: event.target.value });
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                </FormControl>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    this.setState({ adminDialog: false });
+                  }}
+                  color="primary"
+                >
+                  Annuleer
+                </Button>
+                <Button onClick={this.handleAdminCreate} color="primary">
+                  Toevoegen
+                </Button>
+              </DialogActions>
+            </Dialog>
+            <Typography variant="display1">
+              Admins
+              <Button
+                style={{ marginLeft: 8 }}
+                color="primary"
+                size="small"
+                onClick={() => {
+                  this.setState({ adminDialog: true });
+                }}
+              >
+                toevoegen
+              </Button>
+            </Typography>
+
+            <Paper classes={{ root: classes.root }}>
+              <List>
+                {Object.keys(admins).map(adminIndex => {
+                  const admin = admins[adminIndex];
+
+                  return (
+                    <ListItem key={adminIndex}>
+                      <ListItemIcon>
+                        <Icon>account_box</Icon>
+                      </ListItemIcon>
+                      <ListItemText primary={admin} />
+                    </ListItem>
+                  );
+                })}
+              </List>
             </Paper>
           </Grid>
         )}
