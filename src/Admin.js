@@ -5,6 +5,7 @@ import firebase from 'firebase';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
 
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -29,6 +30,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 
 import Icon from '@material-ui/core/Icon';
 import { Divider } from '@material-ui/core';
@@ -44,8 +46,7 @@ const styles = theme => ({
   },
   table: {
     minWidth: 700
-  },
-  item: {}
+  }
 });
 
 class Admin extends Component {
@@ -84,7 +85,9 @@ class Admin extends Component {
   handleFlowerCreate = () => {
     const { name, description, image, price } = this.state;
 
-    if (!name || !description || !image || price) return;
+    if (!name || !description || !image || !price) return;
+
+    console.log('CREATING');
 
     firebase
       .storage()
@@ -124,6 +127,14 @@ class Admin extends Component {
         .ref('admins')
         .push(email);
     });
+  };
+
+  handleAdminRemove = adminIndex => {
+    firebase
+      .database()
+      .ref('admins')
+      .child(adminIndex)
+      .remove();
   };
 
   render() {
@@ -341,68 +352,68 @@ class Admin extends Component {
             </Paper>
           </Grid>
         )}
-        {admins && (
-          <Grid item xs={2}>
-            <Dialog
-              open={this.state.adminDialog}
-              onClose={() => {
-                this.setState({ adminDialog: false });
-              }}
-              aria-labelledby="form-dialog-title"
-            >
-              <DialogTitle id="form-dialog-title">Admin toevoegen</DialogTitle>
-              <DialogContent>
-                <DialogContentText>
-                  Voer hieronder het email adres in van het persoon die als
-                  admin toegevoegd moet worden.
-                </DialogContentText>
-                <FormControl>
-                  <Grid
-                    container
-                    justify="center"
-                    classes={{ item: classes.item }}
-                  >
-                    <Grid item xs={12}>
-                      <TextField
-                        id="email"
-                        label="Email"
-                        type="email"
-                        onChange={event => {
-                          this.setState({ email: event.target.value });
-                        }}
-                      />
-                    </Grid>
-                  </Grid>
-                </FormControl>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  onClick={() => {
-                    this.setState({ adminDialog: false });
-                  }}
-                  color="primary"
-                >
-                  Annuleer
-                </Button>
-                <Button onClick={this.handleAdminCreate} color="primary">
-                  Toevoegen
-                </Button>
-              </DialogActions>
-            </Dialog>
-            <Typography variant="display1">
-              Admins
-              <Button
-                style={{ marginLeft: 8 }}
-                color="primary"
-                size="small"
-                onClick={() => {
-                  this.setState({ adminDialog: true });
-                }}
-              >
-                toevoegen
-              </Button>
-            </Typography>
 
+        <Grid item xs={2}>
+          <Dialog
+            open={this.state.adminDialog}
+            onClose={() => {
+              this.setState({ adminDialog: false });
+            }}
+            aria-labelledby="form-dialog-title"
+          >
+            <DialogTitle id="form-dialog-title">Admin toevoegen</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Voer hieronder het email adres in van het persoon die als admin
+                toegevoegd moet worden.
+              </DialogContentText>
+              <FormControl>
+                <Grid
+                  container
+                  justify="center"
+                  classes={{ item: classes.item }}
+                >
+                  <Grid item xs={12}>
+                    <TextField
+                      id="email"
+                      label="Email"
+                      type="email"
+                      onChange={event => {
+                        this.setState({ email: event.target.value });
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </FormControl>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => {
+                  this.setState({ adminDialog: false });
+                }}
+                color="primary"
+              >
+                Annuleer
+              </Button>
+              <Button onClick={this.handleAdminCreate} color="primary">
+                Toevoegen
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Typography variant="display1">
+            Admins
+            <Button
+              style={{ marginLeft: 8 }}
+              color="primary"
+              size="small"
+              onClick={() => {
+                this.setState({ adminDialog: true });
+              }}
+            >
+              toevoegen
+            </Button>
+          </Typography>
+          {admins && (
             <Paper classes={{ root: classes.root }}>
               <List>
                 {Object.keys(admins).map(adminIndex => {
@@ -414,13 +425,23 @@ class Admin extends Component {
                         <Icon>account_box</Icon>
                       </ListItemIcon>
                       <ListItemText primary={admin} />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          onClick={() => {
+                            this.handleAdminRemove(adminIndex);
+                          }}
+                          aria-label="Comments"
+                        >
+                          <Icon>delete</Icon>
+                        </IconButton>
+                      </ListItemSecondaryAction>
                     </ListItem>
                   );
                 })}
               </List>
             </Paper>
-          </Grid>
-        )}
+          )}
+        </Grid>
       </Grid>
     );
   }

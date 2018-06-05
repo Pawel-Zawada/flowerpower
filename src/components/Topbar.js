@@ -59,8 +59,8 @@ class Topbar extends Component {
             .ref('admins')
             .orderByValue()
             .equalTo(user.email)
-            .once('value', snapshot => {
-              if (snapshot.exists)
+            .on('value', snapshot => {
+              if (snapshot.exists())
                 this.setState({ login: { ...this.state.login, admin: true } });
             });
         });
@@ -77,7 +77,7 @@ class Topbar extends Component {
       .catch(function(error) {
         var errorCode = error.code;
         var errorMessage = error.message;
-        console.warning(errorCode, errorMessage);
+        console.warn(errorCode, errorMessage);
       });
   };
 
@@ -88,7 +88,7 @@ class Topbar extends Component {
       .catch(function(error) {
         var errorCode = error.code;
         var errorMessage = error.message;
-        console.warning(errorCode, errorMessage);
+        console.warn(errorCode, errorMessage);
       });
   };
 
@@ -99,7 +99,7 @@ class Topbar extends Component {
       .catch(error => {
         var errorCode = error.code;
         var errorMessage = error.message;
-        console.warning(errorCode, errorMessage);
+        console.warn(errorCode, errorMessage);
       });
   };
 
@@ -171,6 +171,9 @@ class Topbar extends Component {
             </Button>
             <Button color="inherit" component={Link} to="/products">
               Producten
+            </Button>
+            <Button color="inherit" component={Link} to="/orders">
+              Bestellingen
             </Button>
             <Button color="secondary" onClick={this.generateData}>
               Generate data

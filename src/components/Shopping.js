@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 
+import firebase from 'firebase';
+
 import IconButton from '@material-ui/core/IconButton';
 import Icon from '@material-ui/core/Icon';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -11,7 +13,6 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
-import { SIGTTIN } from 'constants';
 
 class Shopping extends Component {
   state = {
@@ -26,10 +27,41 @@ class Shopping extends Component {
     this.setState({ anchorEl: null });
   };
 
-  handleLogout = () => {
-    this.props.handleLogout();
-    this.handleClose();
+  handleCheckout = () => {
+    const { items } = this.props;
+
+    const mail = firebase.auth().currentUser.email;
+
+    if (!items) return;
+
+    firebase
+      .database()
+      .ref('orders')
+      .push({
+        customer: mail,
+        totalPrice: Object.keys(items)
+          .map(itemIndex => {
+            return items[itemIndex].price;
+          })
+          .reduce(function(acc, val) {
+            return acc + val;
+          })
+      })
+      .then(snapshot => {
+        console.log(Object.keys(items).map(item => item));
+        firebase
+          .database()
+          .ref('flowers')
+          .once('value', flowers => {
+            console.log(flowers.val());
+            for (var item in items) {
+              snapshot.ref.child('flowers').push(flowers.val()[item]);
+            }
+          });
+      });
   };
+
+  handleClear = () => {};
 
   render() {
     const { anchorEl } = this.state;
@@ -80,8 +112,7 @@ class Shopping extends Component {
             </List>
           )}
           <Divider />
-          <MenuItem onClick={this.handleClose}>Clear</MenuItem>
-          <MenuItem onClick={this.handleLogout}>Checkout</MenuItem>
+          <MenuItem onClick={this.handleCheckout}>Checkout</MenuItem>
         </Menu>
       </div>
     );

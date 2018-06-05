@@ -6,12 +6,12 @@ import Topbar from './components/Topbar';
 import Home from './Home';
 import Products from './Products';
 import Admin from './Admin';
+import Orders from './Orders';
 
 class App extends Component {
   state = { items: null };
 
   handleAdd = items => {
-    console.log(items);
     this.setState({ items });
   };
 
@@ -28,6 +28,7 @@ class App extends Component {
             handleAdd={this.handleAdd}
           />
           <Route path="/admin" component={Admin} />
+          <Route path="/orders" component={Orders} />
         </div>
       </BrowserRouter>
     );
